@@ -19,6 +19,9 @@ __used
 __attribute__((section("__versions"))) = {
 	{ 0xda9e78e9, "module_layout" },
 	{ 0x4b8b420c, "device_destroy" },
+	{ 0x7485e15e, "unregister_chrdev_region" },
+	{ 0x74738f6d, "cdev_del" },
+	{ 0x620805df, "remove_proc_entry" },
 	{ 0x85305f03, "class_destroy" },
 	{ 0x148887b7, "device_create" },
 	{ 0xb4c75863, "__class_create" },
@@ -37,4 +40,4 @@ __attribute__((section(".modinfo"))) =
 "depends=";
 
 
-MODULE_INFO(srcversion, "C39950F69B083711D00F4F2");
+MODULE_INFO(srcversion, "54844AF8111E5C3CDAAB982");

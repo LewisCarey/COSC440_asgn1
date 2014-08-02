@@ -104,7 +104,17 @@ int asgn1_open(struct inode *inode, struct file *filp) {
    * if opened in write-only mode, free all memory pages
    *
    */
-
+	// edit
+	atomic_inc(asgn1_device.nprocs);
+	if (atomic_read(asgn1_device.nprocs) > atomic_read(asgn1_device.max_nprocs)) {
+		// Too many processes
+		return -EBUSY;
+	}
+	// If write only, free all memory pages
+	if () {
+		free_memory_pages();
+	}
+	// end edit
 
   return 0; /* success */
 }
@@ -321,6 +331,7 @@ int __init asgn1_init_module(void){
 	if (majCheck < 0) {
 		// Error with assigning major number
 		printk(KERN_ERR "Error allocating a major number");
+		goto fail_device;
 	}
 	asgn1_device.cdev = cdev_alloc();	
 	cdev_init(asgn1_device.cdev, &asgn1_fops);
@@ -329,6 +340,7 @@ int __init asgn1_init_module(void){
 	my_proc = create_proc_entry("driver/my_proc", S_IRUGO | S_IWUSR, NULL);
 	if (!my_proc) {
 		printk(KERN_ERR "Error creating proc entry");
+		goto fail_device;
 	}	
 	// end edits
 
@@ -354,6 +366,18 @@ fail_device:
 
   /* COMPLETE ME */
   /* PLEASE PUT YOUR CLEANUP CODE HERE, IN REVERSE ORDER OF ALLOCATION */
+	
+	// edits
+	// Free everything in reverse order
+	// Remove proc
+	if(my_proc) remove_proc_entry("driver/my_proc", NULL);		
+	// Remove list head
+		
+	// Remove cdev
+	cdev_del(asgn1_device.cdev);
+	// Unregister device	
+	unregister_chrdev_region(asgn1_device.dev, asgn1_dev_count); // This goes last	
+	// end edits
 
   return result;
 }
