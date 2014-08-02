@@ -22,6 +22,11 @@ __attribute__((section("__versions"))) = {
 	{ 0x85305f03, "class_destroy" },
 	{ 0x148887b7, "device_create" },
 	{ 0xb4c75863, "__class_create" },
+	{ 0x39c19d5, "create_proc_entry" },
+	{ 0xe3321d40, "cdev_add" },
+	{ 0x60c2503e, "cdev_init" },
+	{ 0x9d0d02cf, "cdev_alloc" },
+	{ 0x29537c9e, "alloc_chrdev_region" },
 	{ 0x27e1a049, "printk" },
 	{ 0xefd6cf06, "__aeabi_unwind_cpp_pr0" },
 };
@@ -32,4 +37,4 @@ __attribute__((section(".modinfo"))) =
 "depends=";
 
 
-MODULE_INFO(srcversion, "0CC048FCC7861DAFBC78B06");
+MODULE_INFO(srcversion, "C39950F69B083711D00F4F2");

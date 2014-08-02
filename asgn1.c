@@ -37,6 +37,10 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Lewis Carey");
 MODULE_DESCRIPTION("COSC440 asgn1");
 
+// edits
+static struct proc_dir_entry *my_proc;
+// end edits
+
 
 /**
  * The node structure for the memory page linked list.
@@ -309,7 +313,25 @@ int __init asgn1_init_module(void){
    * initialize the page list
    * create proc entries
    */
- 
+	
+	// edits
+	atomic_set(&asgn1_device.nprocs, 0);
+	atomic_set(&asgn1_device.max_nprocs, 10); // Is this arbitrary?	
+	int majCheck = alloc_chrdev_region(asgn1_device.dev, asgn1_minor, asgn1_dev_count, MYDEV_NAME);
+	if (majCheck < 0) {
+		// Error with assigning major number
+		printk(KERN_ERR "Error allocating a major number");
+	}
+	asgn1_device.cdev = cdev_alloc();	
+	cdev_init(asgn1_device.cdev, &asgn1_fops);
+	cdev_add(asgn1_device.cdev, asgn1_device.dev, asgn1_dev_count);
+	INIT_LIST_HEAD(&asgn1_device.mem_list);
+	my_proc = create_proc_entry("driver/my_proc", S_IRUGO | S_IWUSR, NULL);
+	if (!my_proc) {
+		printk(KERN_ERR "Error creating proc entry");
+	}	
+	// end edits
+
   asgn1_device.class = class_create(THIS_MODULE, MYDEV_NAME);
   if (IS_ERR(asgn1_device.class)) {
   }
