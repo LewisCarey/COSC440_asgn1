@@ -323,6 +323,7 @@ int __init asgn1_init_module(void){
 		printk(KERN_ERR "Error allocating a major number");
 		goto fail_device;
 	}
+	asgn1_major = MAJOR(asgn1_device.dev);
 	if (!(asgn1_device.cdev = cdev_alloc())) {
 		printk(KERN_ERR "cdev_alloc() failed");
 		goto fail_device;
