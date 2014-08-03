@@ -30,6 +30,7 @@ __attribute__((section("__versions"))) = {
 	{ 0x60c2503e, "cdev_init" },
 	{ 0x9d0d02cf, "cdev_alloc" },
 	{ 0x29537c9e, "alloc_chrdev_region" },
+	{ 0x2e5810c6, "__aeabi_unwind_cpp_pr1" },
 	{ 0x27e1a049, "printk" },
 	{ 0xefd6cf06, "__aeabi_unwind_cpp_pr0" },
 };
@@ -40,4 +41,4 @@ __attribute__((section(".modinfo"))) =
 "depends=";
 
 
-MODULE_INFO(srcversion, "5B81C16F2E9A978BC7C1FA9");
+MODULE_INFO(srcversion, "88D46C8132A8B976CAD372E");

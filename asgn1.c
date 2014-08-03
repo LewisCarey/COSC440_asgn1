@@ -104,8 +104,18 @@ int asgn1_open(struct inode *inode, struct file *filp) {
    * if opened in write-only mode, free all memory pages
    *
    */
+	atomic_inc(&asgn1_device.nprocs);
+	if (atomic_read(&asgn1_device.nprocs) > atomic_read(&asgn1_device.max_nprocs)) {
+		printk(KERN_ERR "Too many process trying to access device driver");
+		return -EBUSY;
+	}
 
-
+	if (filp == O_WRONLY) {
+		// If write only
+		free_memory_pages();
+	}
+	
+	printk(KERN_INFO "Successfully opened device");
   return 0; /* success */
 }
 
@@ -119,6 +129,9 @@ int asgn1_release (struct inode *inode, struct file *filp) {
   /**
    * decrement process count
    */
+
+	atomic_dec(&asgn1_device.nprocs);
+
   return 0;
 }
 
