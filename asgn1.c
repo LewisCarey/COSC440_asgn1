@@ -106,16 +106,10 @@ int asgn1_open(struct inode *inode, struct file *filp) {
    */
 	atomic_inc(&asgn1_device.nprocs);
 	if (atomic_read(&asgn1_device.nprocs) > atomic_read(&asgn1_device.max_nprocs)) {
-		printk(KERN_ERR "Too many process trying to access device driver");
+		printk(KERN_ERR "Too many processes accessing this device");
 		return -EBUSY;
 	}
 
-	if (filp == O_WRONLY) {
-		// If write only
-		free_memory_pages();
-	}
-	
-	printk(KERN_INFO "Successfully opened device");
   return 0; /* success */
 }
 
@@ -129,7 +123,6 @@ int asgn1_release (struct inode *inode, struct file *filp) {
   /**
    * decrement process count
    */
-
 	atomic_dec(&asgn1_device.nprocs);
 
   return 0;
@@ -330,22 +323,15 @@ int __init asgn1_init_module(void){
 	// edits
 	atomic_set(&asgn1_device.nprocs, 0);
 	atomic_set(&asgn1_device.max_nprocs, 10); // Is this arbitrary?	
-	int majCheck = alloc_chrdev_region(&asgn1_device.dev, asgn1_minor, asgn1_dev_count, MYDEV_NAME);
+	int majCheck = alloc_chrdev_region(asgn1_device.dev, asgn1_minor, asgn1_dev_count, MYDEV_NAME);
 	if (majCheck < 0) {
 		// Error with assigning major number
 		printk(KERN_ERR "Error allocating a major number");
 		goto fail_device;
 	}
-	asgn1_major = MAJOR(asgn1_device.dev);
-	if (!(asgn1_device.cdev = cdev_alloc())) {
-		printk(KERN_ERR "cdev_alloc() failed");
-		goto fail_device;
-	}	
+	asgn1_device.cdev = cdev_alloc();	
 	cdev_init(asgn1_device.cdev, &asgn1_fops);
-	if (cdev_add(asgn1_device.cdev, asgn1_device.dev, asgn1_dev_count) < 0) {
-		printk(KERN_ERR "cdev_add() failed");
-		goto fail_device;
-	}
+	cdev_add(asgn1_device.cdev, asgn1_device.dev, asgn1_dev_count);
 	INIT_LIST_HEAD(&asgn1_device.mem_list);
 	my_proc = create_proc_entry("driver/my_proc", S_IRUGO | S_IWUSR, NULL);
 	if (!my_proc) {
@@ -368,11 +354,6 @@ int __init asgn1_init_module(void){
   
   printk(KERN_WARNING "set up udev entry\n");
   printk(KERN_WARNING "Hello world from %s\n", MYDEV_NAME);
-	
-	// edits
-	printk(KERN_WARNING "Major number = %d, Minor number = %d\n", MAJOR (asgn1_device.dev), MINOR (asgn1_device.dev));
-	// edn edits
-
   return 0;
 
   /* cleanup code called when any of the initialization steps fail */
