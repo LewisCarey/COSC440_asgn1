@@ -110,6 +110,10 @@ int asgn1_open(struct inode *inode, struct file *filp) {
 		return -EBUSY;
 	}
 
+	if(filp->f_flags == O_WRONLY) {
+		free_memory_pages;
+	}
+
   return 0; /* success */
 }
 
@@ -222,6 +226,66 @@ ssize_t asgn1_write(struct file *filp, const char __user *buf, size_t count,
    *   a while loop / do-while loop is recommended to handle this situation. 
    */
 
+	// Edits
+	
+	// First thing we need to do is calculate how many pages we are going to need,
+	// and add these to the linked list
+
+	// While we still have pages to set up
+	while (asgn1_device.num_pages < final_page_no + 1) {
+		// Allocate a page in memory	
+		curr = kmalloc(sizeof(page_node), GFP_KERNEL);
+		curr->page = alloc_page(GFP_KERNEL);
+		// If we didn't manage to allocate anything, return error
+		if (curr->page == NULL) {
+			printk(KERN_WARNING "Not enough memory left fro writing\n");
+			return size_written;
+		}
+		// Add the allocated memory to the list
+		list_add_tail(&(curr->list), &asgn1_device.mem_list);
+		asgn1_device.num_pages++;
+	}
+	printk(KERN_INFO "%s: %d pages total\n", MYDEV_NAME, asgn1_device.num_pages);
+	printk(KERN_INFO "%s: %d to be written", MYDEV_NAME, count);
+	
+	// Now that all our nodes and pages are allocated, traverse the list to find
+	// the one to start on.
+	list_for_each(ptr, &asgn1_device.mem_list) {
+		if(curr_page_no == begin_page_no) break;
+		curr_page_no++;
+	}
+	curr = list_entry(ptr, page_node, list);
+	
+	// Write the data
+	while (size_written < count) {
+		// Ensure the list has been initialised
+		if (curr->page == NULL) {
+			printk(KERN_ERR "No page to be written to in %s\n", MYDEV_NAME);
+			return -1;
+		}
+		// Find the offset to begin writing
+		begin_offset = *f_pos % PAGE_SIZE;
+		// Make sure size we are writing fits in the page
+		size_to_be_written = count - size_written;
+		if ((PAGE_SIZE - begin_offset) < size_to_be_written) {
+			size_to_be_written = PAGE_SIZE - begin_offset;
+		}
+		
+		// Now that all checks have been made, write the data
+		printk(KERN_INFO "%s: Writing %d bytes to page %d\n", MYDEV_NAME, size_to_be_written, curr_page_no);
+		size_not_written = copy_from_user(page_address(curr->page) + begin_offset, buf + size_written, size_to_be_written);
+		curr_size_written = size_to_be_written - size_not_written;
+		*f_pos += curr_size_written;
+		size_written += curr_size_written;
+		if (size_not_written) break;
+		ptr = ptr->next;
+		curr = list_entry(ptr, page_node, list);
+		curr_page_no++;
+	}
+	
+	filp->f_pos = *f_pos;
+	// end edits	
+	
 
   asgn1_device.data_size = max(asgn1_device.data_size,
                                orig_f_pos + size_written);
@@ -323,7 +387,7 @@ int __init asgn1_init_module(void){
 	// edits
 	atomic_set(&asgn1_device.nprocs, 0);
 	atomic_set(&asgn1_device.max_nprocs, 10); // Is this arbitrary?	
-	int majCheck = alloc_chrdev_region(asgn1_device.dev, asgn1_minor, asgn1_dev_count, MYDEV_NAME);
+	int majCheck = alloc_chrdev_region(&asgn1_device.dev, asgn1_minor, asgn1_dev_count, MYDEV_NAME);
 	if (majCheck < 0) {
 		// Error with assigning major number
 		printk(KERN_ERR "Error allocating a major number");
@@ -372,7 +436,7 @@ fail_device:
 	// Remove cdev
 	cdev_del(asgn1_device.cdev);
 	// Unregister device	
-	unregister_chrdev_region(asgn1_device.dev, asgn1_dev_count); // This goes last	
+	unregister_chrdev_region(&asgn1_device.dev, asgn1_dev_count); // This goes last	
 	// end edits
 
   return result;
