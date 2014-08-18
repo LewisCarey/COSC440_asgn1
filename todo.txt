@@ -1,0 +1,11 @@
+List of things to complete:
+
+2) ioctl function
+
+3) Properly comment / tidy up code
+
+5) Test open, close, free memory pages, release, lseek
+
+6) read_procmem
+
+7) Test mmap further - alter program to write to memory that has been mapped

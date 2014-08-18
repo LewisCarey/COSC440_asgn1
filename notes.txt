@@ -1,0 +1,12 @@
+TESTING:
+
+We can treat the driver as a file to read / write to, and therefore can perform tests this way...
+
+	echo "test" > /dev/asgn1
+
+	cat /dev/asgn1
+
+These will read and then write to the driver respectively.
+
+
+OVERWRITES:
