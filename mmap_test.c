@@ -14,7 +14,12 @@
 #define SET_NPROC_OP 1
 #define ASGN1_SET_NPROC _IOW(MYIOC_TYPE, SET_NPROC_OP, sizeof(int)) 
 
+#define GET_MAJ_NUMBER_OP 2
+#define ASGN1_GET_MAJ_NUMBER _IOR(MYIOC_TYPE, GET_MAJ_NUMBER_OP, sizeof(int))
 
+
+#define GET_PROC_NUMBER_OP 3
+#define ASGN1_GET_PROC_NUMBER _IOR(MYIOC_TYPE, GET_PROC_NUMBER_OP, sizeof(int))
 
 ssize_t my_fread(int fildes, void *buf, size_t nbyte) {
     ssize_t read_size;
@@ -154,5 +159,14 @@ int main (int argc, char **argv)
         exit (1);
     }
     printf("nproc set to %d\n", nproc);
-    return 0;
+
+	int majNumber = ioctl (fd, ASGN1_GET_MAJ_NUMBER, 0);
+	printf("Device major number: %d\n", majNumber);	
+
+	int nprocsCount = ioctl (fd, ASGN1_GET_PROC_NUMBER, 0);
+	printf("Device current processes: %d\n", nprocsCount);	
+	
+	printf("Program finsihed\n");	
+	
+	return 0;
 }
